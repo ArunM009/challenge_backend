@@ -1,36 +1,36 @@
-import pdfplumber
+import PyPDF2
+import tabula
 import json
 
-def extract_information_and_tables(pdf_path: str) -> dict:
-    """Extract both text and table data from each page of the PDF document."""
-    extracted_data = {
-        "text": [],  # Store extracted text
-        "tables": []  # Store extracted tables as lists of dictionaries
-    }
-    
-    with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
-            # TODO: Extract text from the page and add it to extracted_data["text"]
-            
-            # TODO: Extract table data from the page, process it into dictionaries, and add to extracted_data["tables"]
-                
-    return extracted_data
+def extract_text(pdf_path):
+    with open(pdf_path, 'rb') as file:
+        reader = PyPDF2.PdfFileReader(file)
+        text = ''
+        for page_num in range(reader.numPages):
+            page = reader.getPage(page_num)
+            text += page.extractText()
+    return text
 
-def save_extracted_data(data: dict, output_file: str):
-    """Save the extracted data to a JSON file."""
-    # TODO: Implement saving logic to write the `data` dict to the specified `output_file` in JSON format
-
-def main():
-    pdf_path = 'input.pdf'  # TODO: Specify the path to the input PDF file
-    output_file = 'output.json'  # TODO: Specify the path to the output JSON file
-    
-    # Extract data from PDF
-    extracted_data = extract_information_and_tables(pdf_path)
-    
-    # Save the extracted data
-    save_extracted_data(extracted_data, output_file)
-    
-    print(f"Extracted data has been saved to {output_file}")
+def extract_tables(pdf_path):
+    tables = tabula.read_pdf(pdf_path, pages='all', multiple_tables=True)
+    return tables
 
 if __name__ == "__main__":
-    main()
+    pdf_path = input("Enter path to PDF file: ")
+    
+    # Extract text
+    text = extract_text(pdf_path)
+    
+    # Extract tables
+    tables = extract_tables(pdf_path)
+    
+    # Save results to JSON
+    result = {
+        'text': text,
+        'tables': tables
+    }
+    
+    with open('pdf_extraction_results.json', 'w') as f:
+        json.dump(result, f, indent=4)
+    
+    print("Text and tables extracted and saved to pdf_extraction_results.json")
