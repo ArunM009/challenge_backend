@@ -1,40 +1,33 @@
-import json
-from collections import Counter
-from typing import List, Tuple
+from flask import Flask, request, jsonify
 
-def load_data(filename: str) -> List[int]:
-    """Load a list of integers from a JSON file."""
-    # TODO: Implement loading the list of numbers from a JSON file named `filename`.
-    pass  # placeholder
+app = Flask(__name__)
 
-def calculate_frequency(numbers: List[int]) -> List[Tuple[int, int]]:
-    """Calculate the frequency of each unique number and return sorted by frequency descending."""
-    # TODO: Use collections.Counter to calculate frequency and sort by frequency (descending).
-    pass  # placeholder
-
-def get_third_highest_frequency(frequencies: List[Tuple[int, int]]) -> Tuple[int, int]:
-    """Retrieve the third highest frequency from the list of (number, frequency) tuples."""
-    # TODO: Implement logic to find the third highest frequency or handle case with less unique numbers.
-    pass  # placeholder
-
-def save_output(data: dict, filename: str) -> None:
-    """Save the given data as JSON in a file."""
-    # TODO: Implement saving the data to a JSON file named `filename`.
-    pass  # placeholder
-
-def main():
-    numbers = load_data('data.json')
-    frequencies = calculate_frequency(numbers)
-    third_highest_freq = get_third_highest_frequency(frequencies)
+def third_highest_frequency(nums):
+    frequency = {}
+    for num in nums:
+        frequency[num] = frequency.get(num, 0) + 1
     
-    output = {
-        "sorted_frequency_distribution": frequencies,
-        "third_highest_frequency": third_highest_freq
-    }
+    sorted_frequency = sorted(frequency.items(), key=lambda x: x[1], reverse=True)
     
-    save_output(output, 'output.json')
+    third_highest = None
+    count = 0
+    for num, freq in sorted_frequency:
+        count += 1
+        if count == 3:
+            third_highest = num
+            break
     
-    print("Output saved to output.json")
+    return third_highest
 
-if __name__ == "__main__":
-    main()
+@app.route('/third_highest_frequency', methods=['POST'])
+def find_third_highest_frequency():
+    data = request.json
+    numbers = data.get('numbers', [])
+    if not numbers:
+        return jsonify({'error': 'No numbers provided'}), 400
+    
+    result = third_highest_frequency(numbers)
+    return jsonify({'third_highest_frequency': result})
+
+if __name__ == '__main__':
+    app.run(debug=True)
